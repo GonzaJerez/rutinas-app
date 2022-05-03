@@ -16,6 +16,7 @@ class Server {
             auth:              '/api/auth',
             days:              '/api/routines/dayWorkout',
             routines:          '/api/routines',
+            movements:         '/api/movements',
             setsWorkout:       '/api/routines/setsWorkout',
             users:             '/api/users',
             workoutInRoutine:  '/api/routines/workoutInRoutine',
@@ -54,6 +55,7 @@ class Server {
     routes(){
         this.app.use(this.paths.auth, require('../routes/auth'))
         this.app.use(this.paths.days, require('../routes/routineDays'))
+        this.app.use(this.paths.movements, require('../routes/movements'))
         this.app.use(this.paths.routines, require('../routes/routines'))
         this.app.use(this.paths.setsWorkout, require('../routes/sets'))
         this.app.use(this.paths.users, require('../routes/users'))

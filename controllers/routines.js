@@ -6,6 +6,7 @@ const getRoutines = async(req, res) => {
     const {_id: uid} = req.user;
     const queryByCreatorUser = {creatorUser: uid}
 
+    // Valida que las querys recibidas sean números
     if (isNaN(Number(page)) || isNaN(Number(limit))) {
         return res.status(404).json({
             msg: `Error en las querys enviadas, deben ser numeros`

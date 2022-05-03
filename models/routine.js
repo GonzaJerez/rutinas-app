@@ -37,7 +37,6 @@ const RoutineSchema = Schema({
     },
     isPendingToAccept: {
         type: Boolean,
-        // required: true,
         default: false,
     }
 })

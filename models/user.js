@@ -30,6 +30,10 @@ const UserSchema = Schema({
         type: String,
         enum: [roles.admin, roles.user],
         default: roles.user
+    },
+    movements: {
+        type: [Schema.Types.ObjectId],
+        ref: 'Movements',
     }
 })
 
