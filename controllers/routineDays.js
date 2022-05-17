@@ -1,19 +1,41 @@
 const { DayWorkout, Routine } = require( "../models" );
 
 
-// const getDays = (req, res) => {
-    
-// }
+const getDays = async(req, res) => {
+    const {idDay} = req.params;
+
+    const dayWorkout = await DayWorkout.findById(idDay)
+        .populate({
+            path: 'workouts',
+            populate: {
+                path: 'workout'
+            }
+        })
+        .populate({
+            path: 'workouts',
+            populate: {
+                path: 'sets'
+            }
+        })
+
+    if (!dayWorkout) {
+        return res.status(404).json({
+            msg: `No existe día de rutina con el id ${idDay}`
+        })
+    }
+
+    res.status(200).json({dayWorkout})
+}
 
 const postDay = async(req, res) => {
-    const body = req.body;
+    // const body = req.body;
     const {idRoutine} = req.params;
     const {_id:uid} = req.user;
     
     // Busca rutina donde agregar y también crea el día
     const [routine, dayWorkout] = await Promise.all([
         Routine.findById(idRoutine),
-        new DayWorkout({...body, actualUser: uid})
+        new DayWorkout({actualUser: uid})
     ])
     
     // Valida q exista rutina con ese id
@@ -43,7 +65,7 @@ const postDay = async(req, res) => {
     await routine.populate('routine')
 
     res.json({
-        routine
+        dayWorkout
     })
 }
 
@@ -83,7 +105,7 @@ const deleteDay = async(req,res) => {
 }
 
 module.exports = {
-    // getDays,
+    getDays,
     postDay,
     // putDay,
     deleteDay

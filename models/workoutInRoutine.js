@@ -12,10 +12,14 @@ const WorkoutInRoutineSchema = Schema({
         // enum: ['Dumbbell', 'Barbell', 'Pulley', 'free']
         enum: tools
     },
-    sets: {
-        type: [Schema.Types.ObjectId],
-        ref: 'SetWorkout'
-    },
+    sets: [{
+        // type: [Schema.Types.ObjectId],
+        // ref: 'SetWorkout'
+        type: {
+            numReps: Number,
+            weight: Number,
+        }
+    }],
     actualUser: {
         type: Schema.Types.ObjectId,
         ref: 'User',

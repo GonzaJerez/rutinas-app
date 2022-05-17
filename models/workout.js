@@ -6,12 +6,16 @@ const WorkoutSchema = Schema({
         required: true
     },
     muscle: {
-        type: String,
-        required: true,
+        type: Schema.Types.ObjectId,
+        ref: 'Muscle',
+        required: true
     },
     status: {
         type: Boolean,
         default: true
+    },
+    img: {
+        type: String,
     }
 })
 

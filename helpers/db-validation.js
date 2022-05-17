@@ -1,4 +1,4 @@
-const {User} = require( '../models' );
+const {User, Muscle} = require( '../models' );
 
 // Verificar si ya existe mail
 const emailExist = async(email = '') => {
@@ -20,9 +20,22 @@ const userExistById = async(id) => {
     }
 }
 
+// Verificar si existe músculo
+const muscleExistById = async(id) => {
+    try{
+        const muscleExist = await Muscle.findById(id);
+        if (!muscleExist) {
+            throw new Error(`No existe músculo con el id ${id}`)
+        }
+    } catch (err){
+        throw new Error(`No existe músculo con el id ${id}`)
+    }
+}
+
 
 module.exports = {
     emailExist,
     userExistById,
+    muscleExistById
 }
 

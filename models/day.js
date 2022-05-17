@@ -1,7 +1,7 @@
 const { Schema, model } = require('mongoose')
 
 const DaySchema = Schema({
-    numMuscles : Number,
+    // numMuscles : Number,
     workouts: {
         type: [Schema.Types.ObjectId],
         ref: 'WorkoutInRoutine'

@@ -24,11 +24,11 @@ router.post('/:idDay',[
 // Ruta para actualizar ejercicio en rutina - lo unico q se podria actualizar el ejercicio en rutina es la tool
 router.put('/:idWorkoutInRoutine',[
     validateJWT,
-    check('tool', 'La tool en obligatoria').notEmpty(),
-    check('tool', `Propiedad tool no es una herramienta válida - ${tools}`).isIn(tools),
+    // check('tool', 'La tool en obligatoria').notEmpty(),
+    // check('tool', `Propiedad tool no es una herramienta válida - ${tools}`).isIn(tools),
     check('idWorkoutInRoutine', 'No es un id válido de Mongo'),
+    workoutOwnerUser,
     validateFields,
-    workoutOwnerUser
 ], putWorkoutInRoutine)
 
 // Ruta para eliminar ejercicio en rutina

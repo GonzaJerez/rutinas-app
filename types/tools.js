@@ -1,5 +1,5 @@
 
-const tools = ['Mancuerna', 'Barra', 'Polea', 'Libre']
+const tools = ['Dumbell', 'Barbell', 'Pulley', 'Free']
 
 module.exports = {
     tools

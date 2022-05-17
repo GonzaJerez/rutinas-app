@@ -1,9 +1,22 @@
-const { WorkoutInRoutine, DayWorkout } = require( "../models" );
+const { WorkoutInRoutine, DayWorkout, SetWorkout } = require( "../models" );
 
 const postWorkoutInRoutine = async(req, res) => {
+    // const {tool, workout, sets} = req.body;
     const body = req.body;
     const {idDay} = req.params;
     const {_id:uid} = req.user;
+
+    let isNumRepsEmpty = false;
+    body.sets.forEach( set => {
+        if (set.numReps !== '') return;
+        return isNumRepsEmpty = true;
+    })
+
+    if(isNumRepsEmpty){
+        return res.status(404).json({
+            msg:`Las cantidades de repes no pueden quedar vacías`
+        })
+    }
 
     // Busca dia donde agregar y también crea el ejercicio
     const [dayWorkout, workoutInRoutine] = await Promise.all([
@@ -27,19 +40,32 @@ const postWorkoutInRoutine = async(req, res) => {
         dayWorkout.save(),
     ])
 
-    // Devuelve los días completos en la rutina
-    await dayWorkout.populate('workouts')
+    // Devuelve el workout al que hace referencia el ejercicio
+    await workoutInRoutine.populate('workout')
 
     res.json({
-        dayWorkout
+        workoutInRoutine
     })
 }
 
 const putWorkoutInRoutine = async(req,res) => {
-    const {tool} = req.body;
+    const body = req.body;
     const {idWorkoutInRoutine} = req.params;
 
-    const workoutInRoutine = await WorkoutInRoutine.findByIdAndUpdate(idWorkoutInRoutine, {tool}, {new:true})
+    let isNumRepsEmpty = false;
+    body.sets.forEach( set => {
+        if (set.numReps || set.numReps !== '' || set.numReps.length > 0) return;
+        return isNumRepsEmpty = true;
+    })
+
+    if(isNumRepsEmpty){
+        return res.status(404).json({
+            msg:`Las cantidades de repes no pueden quedar vacías`
+        })
+    }
+
+    const workoutInRoutine = await WorkoutInRoutine.findByIdAndUpdate(idWorkoutInRoutine, body, {new:true})
+        .populate('workout')
 
     res.status(200).json({
         workoutInRoutine

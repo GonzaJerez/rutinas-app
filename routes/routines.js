@@ -18,8 +18,9 @@ router.get('/:idRoutine',[
 router.post('/',[
     validateJWT,
     check('name', 'El name es obligatorio').notEmpty(),
-    check('days', 'El campo days es obligatorio').notEmpty(),
-    check('days', 'La cantidad de dias en rutina no puede ser superior a los 7 dias de la semana').isFloat({max: 7}),
+    check('img', 'La imagen es obligatoria').notEmpty(),
+    // check('days', 'El campo days es obligatorio').notEmpty(),
+    // check('days', 'La cantidad de dias en rutina no puede ser superior a los 7 dias de la semana').isFloat({max: 7}),
     check('typeUnit', 'No es una unidad de medida permitida').isIn(['kg','lb', 'oz']),
     existRoutineWithSameName,
     validateFields
@@ -39,5 +40,7 @@ router.delete('/:idRoutine', [
     validateFields,
     routineOwnerUser,
 ], deleteRoutine)
+
+
 
 module.exports = router;

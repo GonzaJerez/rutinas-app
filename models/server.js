@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors');
+const fileUpload = require('express-fileupload')
 
 const { dbConnection } = require( '../database/config' );
 const { socketController } = require( '../sockets/controller' );
@@ -16,7 +17,9 @@ class Server {
             auth:              '/api/auth',
             days:              '/api/routines/dayWorkout',
             routines:          '/api/routines',
+            routinesImages:    '/api/routinesImages',
             movements:         '/api/movements',
+            muscles:           '/api/muscles',
             setsWorkout:       '/api/routines/setsWorkout',
             users:             '/api/users',
             workoutInRoutine:  '/api/routines/workoutInRoutine',
@@ -50,13 +53,21 @@ class Server {
 
         // Directorio publico - el sitio web
         this.app.use(express.static('public'))
+
+        // Carga de imgs
+        this.app.use(fileUpload({
+            useTempFiles : true,
+            tempFileDir : '/tmp/'
+        }));
     }
 
     routes(){
         this.app.use(this.paths.auth, require('../routes/auth'))
         this.app.use(this.paths.days, require('../routes/routineDays'))
         this.app.use(this.paths.movements, require('../routes/movements'))
+        this.app.use(this.paths.muscles, require('../routes/muscles'))
         this.app.use(this.paths.routines, require('../routes/routines'))
+        this.app.use(this.paths.routinesImages, require('../routes/routinesImages'))
         this.app.use(this.paths.setsWorkout, require('../routes/sets'))
         this.app.use(this.paths.users, require('../routes/users'))
         this.app.use(this.paths.workoutInRoutine, require('../routes/workoutInRoutine'))

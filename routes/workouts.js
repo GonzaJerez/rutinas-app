@@ -1,6 +1,7 @@
 const {Router} = require('express');
 const { check } = require( 'express-validator' );
 const { getWorkouts, getWorkout, postWorkout, putWorkout, deleteWorkout } = require( '../controllers/workouts' );
+const { muscleExistById } = require( '../helpers' );
 const { validateFields, existWorkoutWithSameName } = require( '../middlewares' );
 
 const router = Router();
@@ -16,6 +17,8 @@ router.get('/:id',[
 router.post('/',[
     check('name', 'El nombre del ejercicio es obligatorio').notEmpty(),
     check('muscle', 'El músculo es obligatorio').notEmpty(),
+    check('muscle', 'El muscle debe ser un id de Mongo').isMongoId(),
+    check('muscle').custom(muscleExistById),
     existWorkoutWithSameName,
     validateFields
 ], postWorkout)

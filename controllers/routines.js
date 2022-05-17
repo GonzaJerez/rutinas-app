@@ -115,17 +115,22 @@ const putRoutine = async(req, res) => {
 const deleteRoutine = async(req, res) => {
     const {idRoutine} = req.params;
 
+    // Elimina rutina
     const routine = await Routine.findByIdAndDelete(idRoutine)
+
+    // routine.routine.map()
 
     res.json({
         routine
     })
 }
 
+
+
 module.exports = {
     getRoutines,
     getRoutine,
     postRoutine,
     putRoutine,
-    deleteRoutine
+    deleteRoutine,
 }

@@ -19,8 +19,12 @@ const RoutineSchema = Schema({
         ref: 'User',
         required: true,
     },
-    days:{
-        type: Number,
+    // days:{
+    //     type: Number,
+    //     required: true
+    // },
+    img:{
+        type: String,
         required: true
     },
     routine: {
