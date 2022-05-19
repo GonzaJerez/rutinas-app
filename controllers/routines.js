@@ -19,9 +19,17 @@ const getRoutines = async(req, res) => {
             await Routine.find(queryByCreatorUser)
                 .limit(Number(limit))
                 .skip(Number(limit)*Number(page - 1))
-                // .populate('actualUser', ['name', 'email'])
-                // .populate('creatorUser', ['name', 'email'])
-                // .populate('routine')
+                .populate('actualUser', ['name', 'email'])
+                .populate('creatorUser', ['name', 'email'])
+                .populate({
+                    path: 'days',
+                    populate: {
+                        path: 'workouts',
+                        populate: {
+                            path: 'workout'
+                        }
+                    }
+                })
         ])
         res.status(200).json({
             page,
@@ -57,16 +65,6 @@ const getRoutine = async(req, res) => {
                 }
             }
         })
-        .populate({
-            path: 'routine',
-            populate: {
-                path: 'workouts',
-                populate: {
-                    // Muestra ref de las series
-                    path: 'sets'
-                }
-            }
-        })
 
     if (!routine) {
         return res.status(404).json({
@@ -89,13 +87,16 @@ const postRoutine = async(req, res) => {
         actualUser: uid
     }
 
-    const creationDate = new Date().getTime()
+    const dateNow = new Date().getTime()
 
-    const newRoutine = await new Routine({...body, ...assingUser, creationDate})
-    await newRoutine.save();
+    const creationDate = dateNow;
+    const sendingDate = dateNow;
+
+    const routine = await new Routine({...body, ...assingUser, creationDate, sendingDate})
+    await routine.save();
 
     res.json({
-        newRoutine
+        routine
     })
 }
 
@@ -118,14 +119,10 @@ const deleteRoutine = async(req, res) => {
     // Elimina rutina
     const routine = await Routine.findByIdAndDelete(idRoutine)
 
-    // routine.routine.map()
-
     res.json({
         routine
     })
 }
-
-
 
 module.exports = {
     getRoutines,

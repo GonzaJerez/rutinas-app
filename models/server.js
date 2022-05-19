@@ -14,16 +14,19 @@ class Server {
         this.io     = require('socket.io')(this.server);
 
         this.paths = {
+            // Users
+            users:             '/api/users',
             auth:              '/api/auth',
-            days:              '/api/routines/dayWorkout',
+            // Muscles & workouts
+            muscles:           '/api/muscles',
+            workouts:          '/api/workouts',
+            // Routines
             routines:          '/api/routines',
+            days:              '/api/routines',
+            workoutInRoutine:  '/api/routines',
+            // Images & movements
             routinesImages:    '/api/routinesImages',
             movements:         '/api/movements',
-            muscles:           '/api/muscles',
-            setsWorkout:       '/api/routines/setsWorkout',
-            users:             '/api/users',
-            workoutInRoutine:  '/api/routines/workoutInRoutine',
-            workouts:          '/api/workouts',
         }
 
         // Conectar a db
@@ -62,16 +65,18 @@ class Server {
     }
 
     routes(){
-        this.app.use(this.paths.auth, require('../routes/auth'))
-        this.app.use(this.paths.days, require('../routes/routineDays'))
-        this.app.use(this.paths.movements, require('../routes/movements'))
-        this.app.use(this.paths.muscles, require('../routes/muscles'))
-        this.app.use(this.paths.routines, require('../routes/routines'))
-        this.app.use(this.paths.routinesImages, require('../routes/routinesImages'))
-        this.app.use(this.paths.setsWorkout, require('../routes/sets'))
         this.app.use(this.paths.users, require('../routes/users'))
-        this.app.use(this.paths.workoutInRoutine, require('../routes/workoutInRoutine'))
+        this.app.use(this.paths.auth, require('../routes/auth'))
+
+        this.app.use(this.paths.muscles, require('../routes/muscles'))
         this.app.use(this.paths.workouts, require('../routes/workouts'))
+
+        this.app.use(this.paths.routines, require('../routes/routines'))
+        this.app.use(this.paths.days, require('../routes/routineDays'))
+        this.app.use(this.paths.workoutInRoutine, require('../routes/workoutInRoutine'))
+        
+        this.app.use(this.paths.movements, require('../routes/movements'))
+        this.app.use(this.paths.routinesImages, require('../routes/routinesImages'))
     }
 
     listen(){

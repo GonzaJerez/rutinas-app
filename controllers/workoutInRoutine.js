@@ -1,93 +1,89 @@
-const { WorkoutInRoutine, DayWorkout, SetWorkout } = require( "../models" );
+const {Routine} = require( "../models" );
 
-const postWorkoutInRoutine = async(req, res) => {
-    // const {tool, workout, sets} = req.body;
+const postWorkoutInRoutine = async(req,res) => {
+    const {idRoutine, idDay} = req.params;
     const body = req.body;
-    const {idDay} = req.params;
-    const {_id:uid} = req.user;
 
-    let isNumRepsEmpty = false;
-    body.sets.forEach( set => {
-        if (set.numReps !== '') return;
-        return isNumRepsEmpty = true;
+    const routine = await Routine.findById(idRoutine);
+
+    routine.days = routine.days.map( day => day._id.toString() !== idDay 
+        ? day 
+        : {
+            ...day, 
+            workouts: [
+                ...day.workouts, 
+                body
+            ]
+        }
+    )
+
+    await routine.populate({
+        path: 'days',
+        populate: {
+            path: 'workouts',
+            populate: {
+                path: 'workout'
+            }
+        }
     })
 
-    if(isNumRepsEmpty){
-        return res.status(404).json({
-            msg:`Las cantidades de repes no pueden quedar vacías`
-        })
-    }
-
-    // Busca dia donde agregar y también crea el ejercicio
-    const [dayWorkout, workoutInRoutine] = await Promise.all([
-        DayWorkout.findById(idDay),
-        new WorkoutInRoutine({...body, actualUser: uid})
-    ])
-
-    // Valida q exista día con ese id
-    if (!dayWorkout) {
-        return res.status(404).json({
-            msg: `No se encontró día de rutina con el id ${idDay}`
-        })
-    }
-
-    // Agrega la ref del nuevo ejercicio creado al día de rutina especificado
-    dayWorkout.workouts = [...dayWorkout.workouts, workoutInRoutine._id]
-
-    // Guarda el día actualizado y el nuevo ejercicio en DB
-    await Promise.all([
-        workoutInRoutine.save(),
-        dayWorkout.save(),
-    ])
-
-    // Devuelve el workout al que hace referencia el ejercicio
-    await workoutInRoutine.populate('workout')
+    await routine.save()
 
     res.json({
-        workoutInRoutine
+        routine
     })
 }
 
 const putWorkoutInRoutine = async(req,res) => {
+    const {idRoutine, idDay, idWorkoutInRoutine} = req.params;
     const body = req.body;
-    const {idWorkoutInRoutine} = req.params;
 
-    let isNumRepsEmpty = false;
-    body.sets.forEach( set => {
-        if (set.numReps || set.numReps !== '' || set.numReps.length > 0) return;
-        return isNumRepsEmpty = true;
+    const routine = await Routine.findById(idRoutine);
+
+    routine.days = routine.days.map( day => day._id.toString() !== idDay 
+        ? day 
+        : {
+            ...day, 
+            workouts: day.workouts.map( workout => workout._id.toString() !== idWorkoutInRoutine
+                ? workout
+                : body)
+        }
+    )
+
+    await routine.populate({
+        path: 'days',
+        populate: {
+            path: 'workouts',
+            populate: {
+                path: 'workout'
+            }
+        }
     })
 
-    if(isNumRepsEmpty){
-        return res.status(404).json({
-            msg:`Las cantidades de repes no pueden quedar vacías`
-        })
-    }
+    await routine.save()
 
-    const workoutInRoutine = await WorkoutInRoutine.findByIdAndUpdate(idWorkoutInRoutine, body, {new:true})
-        .populate('workout')
-
-    res.status(200).json({
-        workoutInRoutine
+    res.json({
+        routine
     })
 }
 
 const deleteWorkoutInRoutine = async(req,res) => {
-    const {idWorkoutInRoutine} = req.params;
+    const {idRoutine, idDay, idWorkoutInRoutine} = req.params;
 
-    const [workoutInRoutine, routineDay] = await Promise.all([
-        // Busca y elimina workoutInRoutine
-        await WorkoutInRoutine.findByIdAndDelete(idWorkoutInRoutine),
-        // Busca la referencia a ese workout en la colección de routineDays en el documento que la tenga
-        DayWorkout.findOne({workouts:idWorkoutInRoutine})
-    ])
+    const routine = await Routine.findById(idRoutine);
 
-    // Elimina y guarda las referencias a los ejercicios en el documento de routineDays
-    routineDay.workouts = routineDay.workouts.filter( workout => workout.toString() !== idWorkoutInRoutine.toString())
-    await routineDay.save()
+    routine.days = routine.days.map( day => day._id.toString() !== idDay 
+        ? day 
+        : {
+            ...day,
+            workouts: day.workouts.filter( workout => workout._id.toString() !== idWorkoutInRoutine && workout )
+        }
+    )
 
-    res.status(200).json({
-        workoutInRoutine
+    await routine.save()
+
+    res.json({
+        routine
     })
 }
 

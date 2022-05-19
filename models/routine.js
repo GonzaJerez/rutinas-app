@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose')
+const { tools } = require( '../types/tools' )
 
 const RoutineSchema = Schema({
     name: {
@@ -19,21 +20,36 @@ const RoutineSchema = Schema({
         ref: 'User',
         required: true,
     },
-    // days:{
-    //     type: Number,
-    //     required: true
-    // },
     img:{
         type: String,
-        required: true
+        // required: true
     },
-    routine: {
-        type: [Schema.Types.ObjectId],
-        ref: 'DayWorkout'
-    },
+    days: [{
+        workouts: [{
+            workout: {
+                type: Schema.Types.ObjectId,
+                ref: 'Workout',
+                // required: true
+            },
+            tool: {
+                type: String,
+                enum: tools
+            },
+            sets: [{
+                type: {
+                    numReps: Number,
+                    weight: Number,
+                }
+            }],
+        }]
+    }],
     creationDate:{
         type: Number,
         required: true,
+    },
+    sendingDate:{
+        type:Number,
+        required: true
     },
     lastUser:{
         type: Schema.Types.ObjectId,
