@@ -23,10 +23,14 @@ class Server {
             // Routines
             routines:          '/api/routines',
             days:              '/api/routines',
+            combinedWorkouts:  '/api/routines',
             workoutInRoutine:  '/api/routines',
             // Images & movements
             routinesImages:    '/api/routinesImages',
             movements:         '/api/movements',
+
+            // Search
+            search:            '/api/search'
         }
 
         // Conectar a db
@@ -73,10 +77,13 @@ class Server {
 
         this.app.use(this.paths.routines, require('../routes/routines'))
         this.app.use(this.paths.days, require('../routes/routineDays'))
+        this.app.use(this.paths.combinedWorkouts, require('../routes/combinedWorkouts'))
         this.app.use(this.paths.workoutInRoutine, require('../routes/workoutInRoutine'))
         
         this.app.use(this.paths.movements, require('../routes/movements'))
         this.app.use(this.paths.routinesImages, require('../routes/routinesImages'))
+
+        this.app.use(this.paths.search, require('../routes/search'))
     }
 
     listen(){

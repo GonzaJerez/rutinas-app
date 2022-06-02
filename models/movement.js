@@ -19,6 +19,12 @@ const MovementSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Routine',
         required: true
+    },
+    status:{
+        type: String,
+        enum: 'Accepted' | 'Rejected' | 'Pending',
+        required: true,
+        default:'Pending'
     }
 })
 

@@ -10,26 +10,38 @@ const validateWorkout = (req,res,next) => {
         days.map( day => {
             if (!day.workouts) return;
 
-            day.workouts.map( async(workout) => {
-                if (!isValidObjectId(workout.workout)) {
-                    return workoutIsValid = false;
-                }
-                const existWorkout = await Workout.findById(workout.workout)
-                if (!existWorkout) {
-                    return workoutIsValid = false;
-                }
+            day.workouts.map( (workout) => {
+                if(!workout.combinedWorkouts) return;
+                workout.combinedWorkouts.map( async(work) => {
+                    if (!isValidObjectId(work.workout)) {
+                        return workoutIsValid = false;
+                    }
+                    const existWorkout = await Workout.findById(work.workout)
+                    if (!existWorkout) {
+                        return workoutIsValid = false;
+                    }
+
+                })
             })
         })
     }
 
     // Si envían el workout desde la creación de ejercicio entra aca y valida
     if (workouts) {
-        workouts.map( async(workout) => {
-            const existWorkout = await Workout.findById(workout);
+        workouts.map( (workout) => {
+            if(!workout.combinedWorkouts) return;
 
-            if (!existWorkout) {
-                return workoutIsValid = false;
-            }
+            workout.combinedWorkouts.map( async(work) => {
+                if (!isValidObjectId(work.workout)) {
+                    return workoutIsValid = false;
+                }
+                const existWorkout = await Workout.findById(work.workout);
+    
+                if (!existWorkout) {
+                    return workoutIsValid = false;
+                }
+
+            })
         })
     }
 

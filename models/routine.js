@@ -24,34 +24,41 @@ const RoutineSchema = Schema({
         type: String,
         // required: true
     },
+    timer:{
+        type:Number,
+        default: 60000,
+        required:true
+    },
     days: [{
         workouts: [{
-            workout: {
-                type: Schema.Types.ObjectId,
-                ref: 'Workout',
-                // required: true
-            },
-            tool: {
-                type: String,
-                enum: tools
-            },
-            sets: [{
-                type: {
-                    numReps: Number,
-                    weight: Number,
-                }
-            }],
+            combinedWorkouts: [{
+                workout: {
+                    type: Schema.Types.ObjectId,
+                    ref: 'Workout',
+                    // required: true
+                },
+                tool: {
+                    type: String,
+                    enum: tools
+                },
+                sets: [{
+                    type: {
+                        numReps: Number,
+                        weight: Number,
+                    }
+                }],
+            }]
         }]
     }],
     creationDate:{
         type: Number,
         required: true,
     },
-    sendingDate:{
+    modifyDate:{
         type:Number,
         required: true
     },
-    lastUser:{
+    sendBy:{
         type: Schema.Types.ObjectId,
         ref: 'User',
     },

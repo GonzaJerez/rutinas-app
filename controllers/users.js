@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs')
 const {User} = require('../models');
 const { generateJWT } = require( '../helpers/generate-jwt' );
 const { roles } = require( '../types/roles' );
+const { updateImgUser } = require( '../helpers' );
 
 
 const getUsers = async(req = request, res = response) => {
@@ -85,17 +86,36 @@ const postUsers = async(req, res) => {
 const putUser = async(req = request, res) => {
 
     const {id} = req.params
-    const {_id, google, password, status, role, ...rest} = req.body;
+    const {_id, google, actualPassword, newPassword, status, role, email1, email2, ...rest} = req.body;
 
-    if (password) {
+    if (newPassword) {
+        const isValidPass = bcrypt.compareSync(actualPassword, user.password)
+        if (!isValidPass) {
+            return res.status(404).json({
+                msg:`Contraseña incorrecta`
+            })
+        }
         // Encriptar contraseña
         const salt = bcrypt.genSaltSync();
-        rest.password = bcrypt.hashSync(password, salt )
+        rest.password = bcrypt.hashSync(newPassword, salt )
+    }
+
+    if (req.files?.img) {
+        rest.img = await updateImgUser(id, req.files.img)
+    }
+
+    if (email1 && email2) {
+        if (email1 !== email2) {
+            return res.status(404).json({
+                msg: `Los emails introducidos no son iguales`
+            })
+        }
+        rest.email = email1
     }
 
     const user = await User.findByIdAndUpdate(id, rest, {new:true})
 
-    res.status(200).json( user )
+    res.status(200).json( {user} )
 }
 
 const deleteUser = async(req, res) => {

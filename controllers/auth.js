@@ -57,10 +57,11 @@ const googleSignIn = async(req, res) => {
 
     try {
 
-        const {name, email} = await googleVerify(idToken)
+        const {name, email, img} = await googleVerify(idToken)
         const data = {
             name,
             email,
+            img,
             password: ':P',
             google: true,
         }

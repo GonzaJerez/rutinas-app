@@ -1,3 +1,4 @@
+const { cleaningToCopyRoutine } = require( "../helpers" );
 const {Routine} = require( "../models" )
 
 // Devuelve las rutinas no eliminadas del usuario q hace la peticion
@@ -26,11 +27,21 @@ const getRoutines = async(req, res) => {
                     populate: {
                         path: 'workouts',
                         populate: {
-                            path: 'workout'
+                            path: 'combinedWorkouts',
+                            populate: {
+                                path: 'workout',
+                                populate: {
+                                    path: 'muscle'
+                                }
+                            }
                         }
                     }
                 })
+                /* .populate({
+                    path: 'days.workouts.workout.muscle'
+                }) */
         ])
+
         res.status(200).json({
             page,
             limit,
@@ -79,7 +90,7 @@ const getRoutine = async(req, res) => {
 
 
 const postRoutine = async(req, res) => {
-    const body = req.body;
+    const {name, typeUnit, img, days, timer} = req.body;
     const {_id: uid} = req.user;
 
     const assingUser = {
@@ -90,9 +101,25 @@ const postRoutine = async(req, res) => {
     const dateNow = new Date().getTime()
 
     const creationDate = dateNow;
-    const sendingDate = dateNow;
+    const modifyDate = dateNow;
 
-    const routine = await new Routine({...body, ...assingUser, creationDate, sendingDate})
+    const routine = await new Routine({name,typeUnit,img,days,timer, ...assingUser, creationDate, modifyDate})
+
+    await routine.populate({
+        path: 'days',
+        populate: {
+            path: 'workouts',
+            populate: {
+                path: 'combinedWorkouts',
+                populate: {
+                    path: 'workout',
+                    populate: {
+                        path: 'muscle'
+                    }
+                }
+            }
+        }
+    })
     await routine.save();
 
     res.json({
@@ -104,8 +131,24 @@ const postRoutine = async(req, res) => {
 const putRoutine = async(req, res) => {
     const {idRoutine} = req.params;
     const {_id, creatorUser, actualUser, creationDate, ...rest} = req.body;
+    const modifyDate = new Date().getTime();
 
-    const routine = await Routine.findByIdAndUpdate(idRoutine,{...rest}, {new: true})
+    const routine = await Routine.findByIdAndUpdate(idRoutine,{...rest, modifyDate}, {new: true})
+        .populate({
+            path: 'days',
+            populate: {
+                path: 'workouts',
+                populate: {
+                    path: 'combinedWorkouts',
+                    populate: {
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
+                    }
+                }
+            }
+        })
 
     res.json({
         routine
@@ -124,10 +167,53 @@ const deleteRoutine = async(req, res) => {
     })
 }
 
+const copyRoutine = async(req,res) => {
+    const {idRoutine} = req.params;
+
+    // Busca la rutina por id
+    const actualRoutine = await Routine.findById(idRoutine)
+    
+    // Limpia la rutina encontrada para poder crear una nueva a partir de esta
+    const routineToCopy = await cleaningToCopyRoutine(actualRoutine)
+
+    // Actualiza fechas de creación y modificación
+    const dateNow = new Date().getTime()
+    const creationDate = dateNow;
+    const modifyDate = dateNow;
+
+    // Crea la nueva rutina
+    const routine = await new Routine({...routineToCopy, creationDate, modifyDate})
+
+    await Promise.all([
+        routine.populate('actualUser', ['name', 'email']),
+        routine.populate('creatorUser', ['name', 'email']),
+        routine.populate({
+            path: 'days',
+            populate: {
+                path: 'workouts',
+                populate: {
+                    path: 'combinedWorkouts',
+                    populate: {
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
+                    }
+                }
+            }
+        })
+    ])
+    await routine.save()
+
+    res.json({routine})
+
+}
+
 module.exports = {
     getRoutines,
     getRoutine,
     postRoutine,
     putRoutine,
     deleteRoutine,
+    copyRoutine
 }

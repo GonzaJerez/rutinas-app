@@ -10,9 +10,13 @@ const validateTool = (req,res,next) => {
             if (!day.workouts) return;
 
             day.workouts.map( (workout) => {
-                if (!tools.includes(workout.tool)) {
-                    return toolIsValid = false;
-                }
+                if(!workout.combinedWorkouts) return;
+
+                workout.combinedWorkouts.map( work => {
+                    if (!tools.includes(work.tool)) {
+                        return toolIsValid = false;
+                    }
+                })
             })
         })
     }
@@ -20,9 +24,13 @@ const validateTool = (req,res,next) => {
     // Si envían la tool desde la creación del ejercicio entra aca y valida
     if (workouts) {
         workouts.map( (workout) => {
-            if (!tools.includes(workout.tool)) {
-                return toolIsValid = false;
-            }
+            if(!workout.combinedWorkouts) return;
+
+            workout.combinedWorkouts.map( work => {
+                if (!tools.includes(work.tool)) {
+                    return toolIsValid = false;
+                }
+            })
         })
     }
 

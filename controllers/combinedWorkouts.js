@@ -1,7 +1,8 @@
-const {Routine} = require( "../models" );
+const { Routine } = require( "../models" );
 
-const postWorkoutInRoutine = async(req,res) => {
-    const {idRoutine, idDay, idCombinedWorkout} = req.params;
+
+const postCombinedWorkouts = async(req,res) => {
+    const {idRoutine, idDay} = req.params;
     const body = req.body;
 
     const routine = await Routine.findById(idRoutine);
@@ -10,62 +11,102 @@ const postWorkoutInRoutine = async(req,res) => {
         ? day 
         : {
             ...day, 
-            workouts: day.workouts.map( workout => workout._id.toString() !== idCombinedWorkout
+            workouts: [
+                ...day.workouts,
+                body
+            ]
+        }
+    )
+
+    routine.modifyDate = new Date().getTime();
+
+    await routine.populate({
+        path: 'days',
+        populate: {
+            path: 'workouts',
+            populate: {
+                path: 'combinedWorkouts',
+                populate: {
+                    path: 'workout',
+                    populate: {
+                        path: 'muscle'
+                    }
+                }
+            }
+        }
+    })
+
+    await routine.save()
+
+    res.json({
+        routine
+    })
+}
+
+const updateCombinedWorkouts = async(req,res) => {
+    const {idRoutine, idDay, idCombinedWorkouts} = req.params;
+    const body = req.body;
+
+    const routine = await Routine.findById(idRoutine);
+
+    routine.days = routine.days.map( day => day._id.toString() !== idDay 
+        ? day
+        : {
+            ...day,
+            workouts: day.workouts.map( workout => workout._id.toString() !== idCombinedWorkouts 
+                ? workout
+                : body
+            )
+        }
+    )
+
+    routine.modifyDate = new Date().getTime();
+
+    await routine.populate({
+        path: 'days',
+        populate: {
+            path: 'workouts',
+            populate: {
+                path: 'combinedWorkouts',
+                populate: {
+                    path: 'workout',
+                    populate: {
+                        path: 'muscle'
+                    }
+                }
+            }
+        }
+    })
+
+    await routine.save()
+
+    res.json({
+        routine
+    })
+}
+
+const patchWeightCombinedWorkouts = async(req,res) => {
+    const {idRoutine, idDay, idCombinedWorkouts} = req.params;
+    const {newWeights} = req.body;
+
+    const routine = await Routine.findById(idRoutine);
+
+    routine.days = routine.days.map( day => day._id.toString() !== idDay 
+        ? day
+        : {
+            ...day,
+            workouts: day.workouts.map( workout => workout._id.toString() !== idCombinedWorkouts 
                 ? workout
                 : {
                     ...workout,
-                    combinedWorkouts: [...workout.combinedWorkouts, body]
+                    combinedWorkouts: workout.combinedWorkouts.map( work => ({
+                        ...work, 
+                        sets: work.sets.map( (set, index) => ({...set, weight: newWeights[index]}) )
+                    }))
                 }
             )
         }
     )
-    routine.modifyDate = new Date().getTime();
-
-    await routine.populate({
-        path: 'days',
-        populate: {
-            path: 'workouts',
-            populate: {
-                path: 'combinedWorkouts',
-                populate: {
-                    path: 'workout',
-                    populate: {
-                        path: 'muscle'
-                    }
-                }
-            }
-        }
-    })
-
-    await routine.save()
-
-    res.json({
-        routine
-    })
-}
-
-
-const putWorkoutInRoutine = async(req,res) => {
-    const {idRoutine, idDay, idCombinedWorkout, idWorkoutInRoutine} = req.params;
-    const body = req.body;
-
-    const routine = await Routine.findById(idRoutine);
-
-    routine.days = routine.days.map( day => day._id.toString() !== idDay 
-        ? day 
-        : {
-            ...day, 
-            workouts: day.workouts.map( workout => workout._id.toString() !== idCombinedWorkout
-                ? workout
-                : {
-                    ...workout,
-                    combinedWorkouts: workout.combinedWorkouts.map( work => work._id.toString() !== idWorkoutInRoutine 
-                    ? work
-                    : body
-                )}
-            )     
-        }
-    )
 
     routine.modifyDate = new Date().getTime();
 
@@ -92,23 +133,18 @@ const putWorkoutInRoutine = async(req,res) => {
     })
 }
 
-
-const deleteWorkoutInRoutine = async(req,res) => {
-    const {idRoutine, idDay, idCombinedWorkout, idWorkoutInRoutine} = req.params;
+const deleteCombinedWorkout = async(req,res) => {
+    const {idRoutine, idDay, idCombinedWorkouts} = req.params;
+    console.log({idCombinedWorkouts});
+    console.log({idDay});
 
     const routine = await Routine.findById(idRoutine);
 
     routine.days = routine.days.map( day => day._id.toString() !== idDay 
-        ? day 
+        ? day
         : {
-            ...day, 
-            workouts: day.workouts.map( workout => workout._id.toString() !== idCombinedWorkout
-                ? workout
-                : {
-                    ...workout,
-                    combinedWorkouts: workout.combinedWorkouts.filter( work => work._id.toString() !== idWorkoutInRoutine && work)
-                }
-            )     
+            ...day,
+            workouts: day.workouts.filter( workout => workout._id.toString() !== idCombinedWorkouts && workout)
         }
     )
 
@@ -138,7 +174,8 @@ const deleteWorkoutInRoutine = async(req,res) => {
 }
 
 module.exports = {
-    postWorkoutInRoutine,
-    putWorkoutInRoutine,
-    deleteWorkoutInRoutine
+    postCombinedWorkouts,
+    updateCombinedWorkouts,
+    patchWeightCombinedWorkouts,
+    deleteCombinedWorkout
 }

@@ -8,12 +8,16 @@ const validateNumRepsSets = (req,res,next) => {
             if (!day.workouts) return;
     
             day.workouts.map( workout => {
-                if(!workout.sets) return;
-    
-                workout.sets.map( set => {
-                    if (set.numReps === '' || set.numReps.lenght === 0 || !set.numReps ) {
-                        return isNumRepsEmpty = true;  
-                    }
+                if(!workout.combinedWorkouts) return;
+
+                workout.combinedWorkouts.map( work => {
+                    if(!work.sets) return;
+                    
+                    work.sets.map( set => {
+                        if (set.numReps === '' || set.numReps.lenght === 0 || !set.numReps ) {
+                            return isNumRepsEmpty = true;  
+                        }
+                    })
                 })
             })
         })
@@ -22,12 +26,16 @@ const validateNumRepsSets = (req,res,next) => {
     // Si envían los sets desde la creación de un día entra aca y valida
     if (workouts) {
         workouts.map( workout => {
-            if(!workout.sets) return;
+            if(!workout.combinedWorkouts) return;
 
-            workout.sets.map( set => {
-                if (set.numReps === '' || set.numReps.lenght === 0 || !set.numReps ) {
-                    return isNumRepsEmpty = true;  
-                }
+            workout.combinedWorkouts.map(work => {
+                if(!work.sets) return;
+    
+                work.sets.map( set => {
+                    if (set.numReps === '' || set.numReps.lenght === 0 || !set.numReps ) {
+                        return isNumRepsEmpty = true;  
+                    }
+                })
             })
         })
     }

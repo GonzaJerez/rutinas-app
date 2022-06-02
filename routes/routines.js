@@ -1,6 +1,6 @@
 const {Router} = require('express');
 const { check } = require( 'express-validator' );
-const { getRoutines, getRoutine, postRoutine, putRoutine, deleteRoutine } = require( '../controllers/routines' );
+const { getRoutines, getRoutine, postRoutine, putRoutine, deleteRoutine, copyRoutine } = require( '../controllers/routines' );
 const { validateFields, validateJWT, routineOwnerUser, existRoutineWithSameName, validateNumRepsSets, validateWorkout, validateTool  } = require( '../middlewares' );
 
 const router = Router();
@@ -45,6 +45,11 @@ router.delete('/:idRoutine', [
     routineOwnerUser,
 ], deleteRoutine)
 
-
+router.post('/copy/:idRoutine',[
+    validateJWT,
+    check('idRoutine', 'El id no es reconocido como un id de Mongo').isMongoId(),
+    validateFields,
+    routineOwnerUser,
+], copyRoutine)
 
 module.exports = router;
