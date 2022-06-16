@@ -30,7 +30,10 @@ class Server {
             movements:         '/api/movements',
 
             // Search
-            search:            '/api/search'
+            search:            '/api/search',
+
+            //Groups
+            groups:              '/api/groups'
         }
 
         // Conectar a db
@@ -84,6 +87,8 @@ class Server {
         this.app.use(this.paths.routinesImages, require('../routes/routinesImages'))
 
         this.app.use(this.paths.search, require('../routes/search'))
+
+        this.app.use(this.paths.groups, require('../routes/group'))
     }
 
     listen(){

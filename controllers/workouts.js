@@ -1,5 +1,10 @@
+const { isValidObjectId } = require('mongoose');
+const path = require('path')
+const fs = require('fs')
+
 const {Workout, Muscle} = require( "../models" );
-const { isValidObjectId } = require('mongoose')
+const { uploadImg } = require( "../helpers" );
+const { tools } = require( '../types/tools' );
 
 
 const getWorkouts = async(req, res) => {
@@ -58,17 +63,27 @@ const getWorkout = async(req, res) => {
 const postWorkout = async(req, res) => {
     let {name, muscle} = req.body;
     let img;
-    let workout;
 
     name = name.toUpperCase();
+
+    const workout = await new Workout({name, muscle})
 
     // Valida si se envía img
     if (req.files?.img) {
         // Crea img en servidor
-        img = await uploadImg(req.files, ['png'], 'workouts')
-        workout = await new Workout({name, muscle, img})
-    } else {
-        workout = await new Workout({name, muscle})
+        img = await uploadImg(req.files, 'workouts')
+        workout.img = img
+    }
+
+    // Si se recibe validTools valida que cada una exista en array de todas las tools disponibles
+    if (validTools) {
+        const isToolsIncorrect = validTools.find( tool => !tools.includes(tool))
+        if (isToolsIncorrect){
+            return res.status(404).json({
+                msg: `Ocurrió un problema con las validTools recibidas`
+            })
+        }
+        workout.validTools = validTools
     }
 
     await workout.save();
@@ -79,7 +94,7 @@ const postWorkout = async(req, res) => {
 
 const putWorkout = async(req, res) => {
     const {id} = req.params;
-    let {name,muscle} = req.body;
+    let {name,muscle, validTools} = req.body;
     let newImg;
 
     const workout = await Workout.findById(id)
@@ -92,7 +107,7 @@ const putWorkout = async(req, res) => {
 
     // Valida si se quiere actualizar la img
     if (req.files?.img) {
-        newImg = await uploadImg(req.files, ['png'], 'workouts')
+        newImg = await uploadImg(req.files, 'workouts')
         // Si ya existe una img para ese músculo en servidor la elimino
         if (workout.img) {
             const pathImg = path.join(__dirname, '../assets/workouts', workout.img);
@@ -102,7 +117,7 @@ const putWorkout = async(req, res) => {
                 fs.unlinkSync(pathImg)
             }
         }
-        muscle.img = newImg;
+        workout.img = newImg;
     }
 
     // Si se recibe nuevo nombre lo actualiza
@@ -121,10 +136,21 @@ const putWorkout = async(req, res) => {
         workout.muscle = muscle;
     }
 
+    // Si se recibe validTools valida que cada una exista en array de todas las tools disponibles
+    if (validTools) {
+        const isToolsIncorrect = validTools.find( tool => !tools.includes(tool))
+        if (isToolsIncorrect){
+            return res.status(404).json({
+                msg: `Ocurrió un problema con las validTools recibidas`
+            })
+        }
+        workout.validTools = validTools
+    }
+
     // Si no recibe argumento para actualizar devuelve error
-    if (!name && !muscle && !newImg) {
+    if (!name && !muscle && !newImg && !validTools) {
         return res.status(400).json({
-            msg: 'El nombre, músculo o img son requeridos para actualizar ejercicio'
+            msg: 'El nombre, músculo, img o tools válidas son requeridos para actualizar ejercicio'
         })
     }
 

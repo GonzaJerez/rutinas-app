@@ -22,7 +22,7 @@ const postMuscle = async(req,res) =>{
 
     if (req.files?.img) {
         // Crea img en servidor
-        img = await uploadImg(req.files, ['png'], 'muscles')
+        img = await uploadImg(req.files, 'muscles')
     }
 
     // Crea muscle en DB con el nombre e img
@@ -50,7 +50,7 @@ const putMuscle = async(req,res)=>{
 
     // Valida si se quiere actualizar la img
     if (req.files?.img) {
-        newImg = await uploadImg(req.files, ['png'], 'muscles')
+        newImg = await uploadImg(req.files, 'muscles')
         // Si ya existe una img para ese músculo en servidor la elimino
         if (muscle.img) {
             const pathImg = path.join(__dirname, '../assets/muscles', muscle.img);

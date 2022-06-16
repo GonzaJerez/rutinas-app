@@ -19,7 +19,7 @@ const postWorkoutInRoutine = async(req,res) => {
             )
         }
     )
-    routine.modifyDate = new Date().getTime();
+    routine.modifyDate = Date.now();
 
     await routine.populate({
         path: 'days',
@@ -67,7 +67,7 @@ const putWorkoutInRoutine = async(req,res) => {
         }
     )
 
-    routine.modifyDate = new Date().getTime();
+    routine.modifyDate = Date.now();
 
     await routine.populate({
         path: 'days',
@@ -112,7 +112,7 @@ const deleteWorkoutInRoutine = async(req,res) => {
         }
     )
 
-    routine.modifyDate = new Date().getTime();
+    routine.modifyDate = Date.now();
 
     await routine.populate({
         path: 'days',

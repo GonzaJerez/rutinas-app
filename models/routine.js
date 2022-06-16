@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose')
+const { modeTraining } = require( '../types/modeTraining' )
 const { tools } = require( '../types/tools' )
 
 const RoutineSchema = Schema({
@@ -18,7 +19,10 @@ const RoutineSchema = Schema({
     actualUser: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+    },
+    group: {
+        type: Schema.Types.ObjectId,
+        ref: 'Group'
     },
     img:{
         type: String,
@@ -35,16 +39,25 @@ const RoutineSchema = Schema({
                 workout: {
                     type: Schema.Types.ObjectId,
                     ref: 'Workout',
-                    // required: true
+                },
+                mode: {
+                    type: String,
+                    enum: modeTraining,
+                    default: modeTraining[0]
                 },
                 tool: {
                     type: String,
-                    enum: tools
+                    // enum: tools,
+                    // default: tools[0]
                 },
                 sets: [{
                     type: {
                         numReps: Number,
                         weight: Number,
+                        isDescending: {
+                            type: Boolean,
+                            default: false,
+                        }
                     }
                 }],
             }]

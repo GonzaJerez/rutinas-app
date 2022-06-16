@@ -50,6 +50,7 @@ const getUser = async(req = request, res = response) => {
 const postUsers = async(req, res) => {
 
     const {name, email, password, role} = req.body;
+    const emailLower = email.toLowerCase()
 
     let user;
 
@@ -57,14 +58,14 @@ const postUsers = async(req, res) => {
     if (role === roles.admin) {
         const adminUser = await User.findOne({role})
         if (!adminUser) {
-            user = await new User({name, email, password, role})
+            user = await new User({name, email:emailLower, password, role})
         } else {
             return res.status(400).json({
                 msg: `Ya existe un administrador`
             })
         }
     } else {
-        user = await new User({name, email, password})
+        user = await new User({name, email:emailLower, password})
     }
 
     // Encriptar contraseña
@@ -104,13 +105,16 @@ const putUser = async(req = request, res) => {
         rest.img = await updateImgUser(id, req.files.img)
     }
 
-    if (email1 && email2) {
-        if (email1 !== email2) {
+    const email1Lower = email1.toLowerCase();
+    const email2Lower = email2.toLowerCase();
+
+    if (email1Lower && email2Lower) {
+        if (email1Lower !== email2Lower) {
             return res.status(404).json({
                 msg: `Los emails introducidos no son iguales`
             })
         }
-        rest.email = email1
+        rest.email = email1Lower
     }
 
     const user = await User.findByIdAndUpdate(id, rest, {new:true})

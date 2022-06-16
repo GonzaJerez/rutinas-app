@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose')
+const { tools } = require( '../types/tools' )
 
 const WorkoutSchema = Schema({
     name: {
@@ -16,6 +17,12 @@ const WorkoutSchema = Schema({
     },
     img: {
         type: String,
+    },
+    validTools: {
+        type: [String],
+        required: true,
+        enum: tools,
+        default: tools
     }
 })
 

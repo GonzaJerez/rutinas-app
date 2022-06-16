@@ -5,6 +5,19 @@ const postCombinedWorkouts = async(req,res) => {
     const {idRoutine, idDay} = req.params;
     const body = req.body;
 
+    const bodyWithoutIds = {
+        combinedWorkouts: body.combinedWorkouts.map( workout => ({
+            tool: workout.tool,
+            workout: workout.workout,
+            sets: workout.sets.map( set => ({
+                weight: set.weight, 
+                numReps: set.numReps,
+                isDescending: set.isDescending
+            })),
+            mode: workout.mode
+        }))
+    }
+
     const routine = await Routine.findById(idRoutine);
 
     routine.days = routine.days.map( day => day._id.toString() !== idDay 
@@ -13,28 +26,32 @@ const postCombinedWorkouts = async(req,res) => {
             ...day, 
             workouts: [
                 ...day.workouts,
-                body
+                bodyWithoutIds
             ]
         }
     )
 
-    routine.modifyDate = new Date().getTime();
+    routine.modifyDate = Date.now();
 
-    await routine.populate({
-        path: 'days',
-        populate: {
-            path: 'workouts',
+    await Promise.all([
+        routine.populate('actualUser'),
+        routine.populate('creatorUser'),
+        routine.populate({
+            path: 'days',
             populate: {
-                path: 'combinedWorkouts',
+                path: 'workouts',
                 populate: {
-                    path: 'workout',
+                    path: 'combinedWorkouts',
                     populate: {
-                        path: 'muscle'
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
                     }
                 }
             }
-        }
-    })
+        })
+    ])
 
     await routine.save()
 
@@ -49,34 +66,64 @@ const updateCombinedWorkouts = async(req,res) => {
 
     const routine = await Routine.findById(idRoutine);
 
-    routine.days = routine.days.map( day => day._id.toString() !== idDay 
-        ? day
-        : {
-            ...day,
-            workouts: day.workouts.map( workout => workout._id.toString() !== idCombinedWorkouts 
-                ? workout
-                : body
-            )
+    // Si recibo "combinedWorkouts" vacío significa que acaban de borrar todos los ejercicios de este
+    // Entonces elimino el combinedWorkout para que no quede vacío
+    if (body.combinedWorkouts.length === 0) {
+        routine.days = routine.days.map( day => day._id.toString() !== idDay 
+            ? day
+            : {
+                ...day,
+                workouts: day.workouts.filter( workout => workout._id.toString() !== idCombinedWorkouts && workout)
+            }
+        )
+    } else {
+        // Si no viene vacío actualizo el combinedWorkouts
+        const bodyWithoutIds = {
+            combinedWorkouts: body.combinedWorkouts.map( workout => ({
+                tool: workout.tool,
+                workout: workout.workout,
+                sets: workout.sets.map( set => ({
+                    weight: set.weight, 
+                    numReps: set.numReps,
+                    isDescending: set.isDescending
+                })),
+            }))
         }
-    )
+    
+        routine.days = routine.days.map( day => day._id.toString() !== idDay 
+            ? day
+            : {
+                ...day,
+                workouts: day.workouts.map( workout => workout._id.toString() !== idCombinedWorkouts 
+                    ? workout
+                    : bodyWithoutIds
+                )
+            }
+        )
+    }
 
-    routine.modifyDate = new Date().getTime();
 
-    await routine.populate({
-        path: 'days',
-        populate: {
-            path: 'workouts',
+    routine.modifyDate = Date.now();
+
+    await Promise.all([
+        routine.populate('actualUser'),
+        routine.populate('creatorUser'),
+        routine.populate({
+            path: 'days',
             populate: {
-                path: 'combinedWorkouts',
+                path: 'workouts',
                 populate: {
-                    path: 'workout',
+                    path: 'combinedWorkouts',
                     populate: {
-                        path: 'muscle'
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
                     }
                 }
             }
-        }
-    })
+        })
+    ])
 
     await routine.save()
 
@@ -108,23 +155,27 @@ const patchWeightCombinedWorkouts = async(req,res) => {
         }
     )
 
-    routine.modifyDate = new Date().getTime();
+    routine.modifyDate = Date.now();
 
-    await routine.populate({
-        path: 'days',
-        populate: {
-            path: 'workouts',
+    await Promise.all([
+        routine.populate('actualUser'),
+        routine.populate('creatorUser'),
+        routine.populate({
+            path: 'days',
             populate: {
-                path: 'combinedWorkouts',
+                path: 'workouts',
                 populate: {
-                    path: 'workout',
+                    path: 'combinedWorkouts',
                     populate: {
-                        path: 'muscle'
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
                     }
                 }
             }
-        }
-    })
+        })
+    ])
 
     await routine.save()
 
@@ -147,24 +198,29 @@ const deleteCombinedWorkout = async(req,res) => {
             workouts: day.workouts.filter( workout => workout._id.toString() !== idCombinedWorkouts && workout)
         }
     )
+    console.log(routine.days[0].workouts);
 
-    routine.modifyDate = new Date().getTime();
+    routine.modifyDate = Date.now();
 
-    await routine.populate({
-        path: 'days',
-        populate: {
-            path: 'workouts',
+    await Promise.all([
+        routine.populate('actualUser'),
+        routine.populate('creatorUser'),
+        routine.populate({
+            path: 'days',
             populate: {
-                path: 'combinedWorkouts',
+                path: 'workouts',
                 populate: {
-                    path: 'workout',
+                    path: 'combinedWorkouts',
                     populate: {
-                        path: 'muscle'
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
                     }
                 }
             }
-        }
-    })
+        })
+    ])
 
     await routine.save()
 

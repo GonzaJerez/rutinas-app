@@ -7,7 +7,7 @@ const getMovements = async(req,res) =>{
     const {_id:uid} = req.user;
 
     const query = {
-        $or:[{from: uid}, {to: uid}]
+        $or:[{'from.uid': uid.toString()}, {'to.uid': uid.toString()}]
     }
 
     // Valida que las querys recibidas sean números
@@ -20,10 +20,30 @@ const getMovements = async(req,res) =>{
     // Busca los movimientos
     const [movements, total] = await Promise.all([
         Movement.find(query)
+            .sort({date: 'desc'})
             .limit(Number(limit))
             .skip(Number(limit)*Number(page - 1))
-            .populate('to', ['name', 'email'])
-            .populate('from', ['name', 'email']),
+            // .populate('to', ['name', 'email'])
+            // .populate('from', ['name', 'email'])
+            .populate('routine')
+            .populate({
+                path: 'routineAtSentMoment',
+                populate: {
+                    path: 'days',
+                    populate: {
+                        path: 'workouts',
+                        populate: {
+                            path: 'combinedWorkouts',
+                            populate: {
+                                path: 'workout',
+                                populate: {
+                                    path: 'muscle'
+                                }
+                            }
+                        }
+                    }
+                }
+            }),
         Movement.countDocuments(query)
     ])
 

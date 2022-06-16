@@ -10,17 +10,8 @@ const cleaningToCopyRoutine = async(routine) => {
     routine = cleaningIdsRoutine(routine)
     
     // Retorna la rutina sin el _id, ni __V, ni las fechas de creación o modificación
-    return {
-        name: routine.name,
-        typeUnit: routine.typeUnit,
-        img: routine.img,
-        days: routine.days,
-        creatorUser: routine.creatorUser.toString(),
-        actualUser: routine.actualUser.toString(),
-    };
+    return routine;
 }
-
-module.exports = {cleaningToCopyRoutine}
 
 
 
@@ -106,21 +97,39 @@ const cleaningIdsRoutine = (routine) => {
 
             // Si existen workouts entonces les saca el id a c/u y retorna el resto del workout
             if(day.workouts){
-                day.workouts = day.workouts.map( combinedWork => (
-                    combinedWork.map( work => {
-
-                        // Si existen los sets entonces les saca el id a c/u y retorna el resto del set
-                        if (work.sets) {
-                            work.sets = work.sets.map( set => ({numReps:set.numReps, weight: set.weight}))
-                        }
-                        
-                        return {tool: work.tool, workout:work.workout || '', sets: work.sets}
-                    })
-                ))
+                day.workouts = day.workouts.map( workout => {
+                    // Si existen combinedWorkouts les saca el id a c/u y retorna el resto del combinedWorkouts
+                    if (workout.combinedWorkouts) {
+                        workout.combinedWorkouts = workout.combinedWorkouts.map( work => {
+    
+                            // Si existen los sets entonces les saca el id a c/u y retorna el resto del set
+                            if (work.sets) {
+                                work.sets = work.sets.map( set => ({numReps:set.numReps, weight: set.weight}))
+                            }
+                            
+                            return {tool: work.tool, workout:work.workout || '', sets: work.sets}
+                        })
+                    }
+                    return {combinedWorkouts: workout.combinedWorkouts}
+                })
             }
             return {workouts: day.workouts}
         })
     }
 
-    return routine;
+    return {
+        name: routine.name,
+        typeUnit: routine.typeUnit,
+        img: routine.img,
+        timer: routine.timer,
+        days: routine.days,
+        creatorUser: routine.creatorUser.toString(),
+        actualUser: routine.actualUser.toString(),
+    };
+}
+
+
+module.exports = {
+    cleaningToCopyRoutine,
+    cleaningIdsRoutine
 }

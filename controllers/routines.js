@@ -5,7 +5,9 @@ const {Routine} = require( "../models" )
 const getRoutines = async(req, res) => {
     const {page = 1, limit=10} = req.query;
     const {_id: uid} = req.user;
-    const queryByCreatorUser = {creatorUser: uid}
+
+    // Query para devolver solo las rutinas del usuario
+    const queryByActualUser = {actualUser: uid}
 
     // Valida que las querys recibidas sean números
     if (isNaN(Number(page)) || isNaN(Number(limit))) {
@@ -16,8 +18,9 @@ const getRoutines = async(req, res) => {
 
     try {
         const [total, routines] = await Promise.all([
-            await Routine.countDocuments(queryByCreatorUser),
-            await Routine.find(queryByCreatorUser)
+            await Routine.countDocuments(queryByActualUser),
+            await Routine.find(queryByActualUser)
+                .sort({modifyDate: 'desc'})
                 .limit(Number(limit))
                 .skip(Number(limit)*Number(page - 1))
                 .populate('actualUser', ['name', 'email'])
@@ -37,9 +40,6 @@ const getRoutines = async(req, res) => {
                         }
                     }
                 })
-                /* .populate({
-                    path: 'days.workouts.workout.muscle'
-                }) */
         ])
 
         res.status(200).json({
@@ -56,6 +56,8 @@ const getRoutines = async(req, res) => {
         })
     }
 }
+
+
 
 
 const getRoutine = async(req, res) => {
@@ -90,7 +92,7 @@ const getRoutine = async(req, res) => {
 
 
 const postRoutine = async(req, res) => {
-    const {name, typeUnit, img, days, timer} = req.body;
+    const body = req.body;
     const {_id: uid} = req.user;
 
     const assingUser = {
@@ -98,28 +100,34 @@ const postRoutine = async(req, res) => {
         actualUser: uid
     }
 
-    const dateNow = new Date().getTime()
+    const dateNow = Date.now()
 
     const creationDate = dateNow;
     const modifyDate = dateNow;
 
-    const routine = await new Routine({name,typeUnit,img,days,timer, ...assingUser, creationDate, modifyDate})
+    const routine = await new Routine({...body, ...assingUser, creationDate, modifyDate})
+    routine.days = [{}]
 
-    await routine.populate({
-        path: 'days',
-        populate: {
-            path: 'workouts',
+    await Promise.all([
+        routine.populate('actualUser', ['name', 'email']),
+        routine.populate('creatorUser', ['name', 'email']),
+        routine.populate({
+            path: 'days',
             populate: {
-                path: 'combinedWorkouts',
+                path: 'workouts',
                 populate: {
-                    path: 'workout',
+                    path: 'combinedWorkouts',
                     populate: {
-                        path: 'muscle'
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
                     }
                 }
             }
-        }
-    })
+        })
+    ])
+
     await routine.save();
 
     res.json({
@@ -131,9 +139,11 @@ const postRoutine = async(req, res) => {
 const putRoutine = async(req, res) => {
     const {idRoutine} = req.params;
     const {_id, creatorUser, actualUser, creationDate, ...rest} = req.body;
-    const modifyDate = new Date().getTime();
+    const modifyDate = Date.now();
 
     const routine = await Routine.findByIdAndUpdate(idRoutine,{...rest, modifyDate}, {new: true})
+        .populate('actualUser', ['name', 'email'])
+        .populate('creatorUser', ['name', 'email'])
         .populate({
             path: 'days',
             populate: {
@@ -177,7 +187,7 @@ const copyRoutine = async(req,res) => {
     const routineToCopy = await cleaningToCopyRoutine(actualRoutine)
 
     // Actualiza fechas de creación y modificación
-    const dateNow = new Date().getTime()
+    const dateNow = Date.now()
     const creationDate = dateNow;
     const modifyDate = dateNow;
 

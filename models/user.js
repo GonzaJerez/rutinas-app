@@ -31,17 +31,15 @@ const UserSchema = Schema({
         enum: [roles.admin, roles.user],
         default: roles.user
     },
-    movements: {
-        type: [Schema.Types.ObjectId],
-        ref: 'Movements',
+    temporalSecurityCode:{
+        type: String,
     }
 })
 
 UserSchema.methods.toJSON = function(){
-    const { __v, password, _id:uid, ...user} = this.toObject();
+    const { __v, password, ...user} = this.toObject();
     return {
         ...user,
-        uid
     };
 }
 

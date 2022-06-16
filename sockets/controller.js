@@ -1,7 +1,7 @@
 
 const { validateJWT, cleaningToCopyRoutine } = require( "../helpers" )
-const { Routine, Movement } = require( "../models" )
-const movement = require( "../models/movement" )
+const { cleaningIdsRoutine } = require( "../helpers/cleaningToCopyRoutine" )
+const { Routine, Movement, User, Group } = require( "../models" )
 
 
 
@@ -15,11 +15,11 @@ const socketController = async(socket) => {
     /**
      *Escuchar evento 'sendRoutine', esta función ya crea la rutina en el usuario que la recibe
     */ 
-    socket.on('sendRoutine', async({idRoutine, uidReceiver}) => {
+    socket.on('sendRoutine', async({idRoutine, uidReceiver,type},callback) => {
 
         // Busca la rutina enviada por el cliente
         const actualRoutine = await Routine.findById(idRoutine)
-
+        
         // Valida que exista la rutina
         if (!actualRoutine) {
             return socket.to(user._id).emit('existRoutine', {
@@ -35,52 +35,120 @@ const socketController = async(socket) => {
         }
 
         // Limpia la rutina encontrada para poder crear una nueva a partir de esta
-        const routineToCopy = await cleaningToCopyRoutine(actualRoutine)
+        const routineToCopy = cleaningIdsRoutine(actualRoutine)
 
         // Actualiza y guarda en DB los campos de esa rutina
-        const sendBy            = routine.actualUser;
-        const actualUser        = uidReceiver;
-        const isPendingToAccept = true;
-        const modifyDate        = new Date().getTime();
+        const sendBy            = user._id;
+        const isPendingToAccept = (type === 'Users') ? true : false;
+        const modifyDate        = Date.now();
+        const creationDate      = actualRoutine.creationDate
 
-        const [routine, movement] = await Promise.all([
-            // Crea copia de rutina con nuevo usuario 
+        // Crea copia de rutina por cada usuario que recibe la rutina
+        const listRoutinesToInsert = await uidReceiver.map( (userId) => (
             new Routine({
                 ...routineToCopy, 
                 sendBy, 
-                actualUser, 
+                actualUser: (type === 'Users') ? userId : null, 
                 isPendingToAccept,
-                modifyDate
-            }),
+                modifyDate,
+                creationDate,
+                group: (type === 'Groups') ? userId : null
+            })
+        ))
+
+        // Busca todos los users o groups enviados por el cliente
+        let listUsersReceiver;
+        if (type === 'Users') {
+            listUsersReceiver = await User.find({_id: {$in:uidReceiver}})
+        }
+        if (type === 'Groups') {
+            listUsersReceiver = await Group.find({_id: {$in:uidReceiver}})
+        }
+
+        // Valida que no esté vacía la lista de usuarios que reciben la rutina
+        if(listUsersReceiver.lenght === 0){
+            return socket.to(user._id).emit('existUserReceiver', {
+                msg: `Ocurrió un error al buscar los usuarios`
+            })
+        }
+
+
+        // Crea la lista a insertar en el "to" con cada usuario que recibe la rutina
+        const movementTo = listUsersReceiver.map( (userReceiver) => (
+            {
+                name: userReceiver.name,
+                email: (type === 'Users') ? userReceiver.email : null,
+                _id: userReceiver._id,
+                img: userReceiver.img,
+                status: (type === 'Users') ? 'Pending' : 'Accepted',
+            }
+        ))
+
+        const [routine, movement] = await Promise.all([
+            // Inserta en coleccion rutinas las copias creadas por cada usuario
+            Routine.insertMany(listRoutinesToInsert),
             // Crea documento en colección Movements y guarda en DB
             new Movement({
-                routine: payload.idRoutine,
-                from:    routine.lastUser,
-                to:      routine.actualUser,
-                date:    new Date().getTime(),
-                status:  'Pending'
+                routine: idRoutine,
+                from: {
+                    name: user.name,
+                    email: user.email,
+                    _id: user._id,
+                    img: user.img,
+                    status:  'Pending',
+                },
+                to: movementTo,
+                date: Date.now(),
+                routineAtSentMoment: {
+                    name: routineToCopy.name,
+                    typeUnit: routineToCopy.typeUnit,
+                    timer: routineToCopy.timer,
+                    days: routineToCopy.days
+                }
+            })
+        ])
+        
+        // Descomprime cada subdocumento hasta las músculos
+        await Promise.all([
+            movement.populate('routine'),
+            movement.populate({
+                path: 'routineAtSentMoment',
+                populate: {
+                    path: 'days',
+                    populate: {
+                        path: 'workouts',
+                        populate: {
+                            path: 'combinedWorkouts',
+                            populate: {
+                                path: 'workout',
+                                populate: {
+                                    path: 'muscle'
+                                }
+                            }
+                        }
+                    }
+                }
             })
         ])
 
-        await Promise.all([
-            routine.save(),
-            movement.save()
-        ])
+        // Guarda el movimento creado en DB 
+        await movement.save();
 
-        socket.to(routine.lastUser).emit('sendSuccess', {
-            movement
-        })
+        // Cuando termina de guardar en DB le envia al cliente que hizo la petición el movimiento y nombre de la rutina enviada
+        callback({movement, nameRoutine:actualRoutine.name})
 
-        // Emite evento 'receiveRoutine' con los datos del usuario que envía la rutina y la rutina
-        socket.to(uidReceiver).emit('receiveRoutine', {
-            from: {
-                uid:    user._id,
-                name:   user.name,
-                email:  user.email
-            },
-            routine,
-            idMovement: movement._id
-        })
+        // Si se envía rutina a otro usuario emite evento 'receiveRoutine' con los datos del usuario que envía la rutina y la rutina
+        if (type === 'Users') {
+            socket.to(uidReceiver).emit('receiveRoutine', {
+                from: {
+                    uid:    user._id,
+                    name:   user.name,
+                    email:  user.email
+                },
+                routine,
+                idMovement: movement._id
+            })
+        }
     })
 
     socket.on('routineSendingResponse', async(payload)=>{
@@ -102,7 +170,7 @@ const socketController = async(socket) => {
             // Actualiza campos de la rutina y movimiento y guarda en DB
             movement.status = 'Accepted';
             routine.isPendingToAccept = false;
-            routine.modifyDate = new Date().getTime();
+            routine.modifyDate = Date.now();
             socket.to(payload.from.uid).emit('statusSendRoutine', {
                 status: true
             })

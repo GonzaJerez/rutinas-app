@@ -9,7 +9,7 @@ router.get('/', [
     validateJWT,
 ], getImages)
 
-router.get('/:id', getImage)
+router.get('/:folder/:id', getImage)
 
 
 

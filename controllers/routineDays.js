@@ -7,20 +7,27 @@ const postDay = async(req,res) => {
     const routine = await Routine.findById(idRoutine);
 
     routine.days = [...routine.days, body]
-    routine.modifyDate = new Date().getTime();
+    routine.modifyDate = Date.now();
 
-    await routine.populate({
-        path: 'days',
-        populate: {
-            path: 'workouts',
+    await Promise.all([
+        routine.populate('actualUser', ['name', 'email']),
+        routine.populate('creatorUser', ['name', 'email']),
+        routine.populate({
+            path: 'days',
             populate: {
-                path: 'workout',
+                path: 'workouts',
                 populate: {
-                    path: 'muscle'
+                    path: 'combinedWorkouts',
+                    populate: {
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
+                    }
                 }
             }
-        }
-    })
+        })
+    ])
 
     await routine.save()
 
@@ -39,20 +46,27 @@ const updateDay = async(req,res) => {
         ? day
         : body
     )
-    routine.modifyDate = new Date().getTime();
+    routine.modifyDate = Date.now();
 
-    await routine.populate({
-        path: 'days',
-        populate: {
-            path: 'workouts',
+    await Promise.all([
+        routine.populate('actualUser', ['name', 'email']),
+        routine.populate('creatorUser', ['name', 'email']),
+        routine.populate({
+            path: 'days',
             populate: {
-                path: 'workout',
+                path: 'workouts',
                 populate: {
-                    path: 'muscle'
+                    path: 'combinedWorkouts',
+                    populate: {
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
+                    }
                 }
             }
-        }
-    })
+        })
+    ])
 
     await routine.save()
 
@@ -67,20 +81,27 @@ const deleteDay = async(req,res) => {
     const routine = await Routine.findById(idRoutine);
 
     routine.days = routine.days.filter( day => day._id.toString() !== idDay && day)
-    routine.modifyDate = new Date().getTime();
+    routine.modifyDate = Date.now();
 
-    await routine.populate({
-        path: 'days',
-        populate: {
-            path: 'workouts',
+    await Promise.all([
+        routine.populate('actualUser', ['name', 'email']),
+        routine.populate('creatorUser', ['name', 'email']),
+        routine.populate({
+            path: 'days',
             populate: {
-                path: 'workout',
+                path: 'workouts',
                 populate: {
-                    path: 'muscle'
+                    path: 'combinedWorkouts',
+                    populate: {
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
+                    }
                 }
             }
-        }
-    })
+        })
+    ])
 
     await routine.save()
 

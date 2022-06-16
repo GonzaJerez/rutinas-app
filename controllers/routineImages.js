@@ -26,10 +26,10 @@ const getImages = async(req,res) => {
 }
 
 const getImage = async(req,res) => {
-    const {id} = req.params;
+    const {folder,id} = req.params;
 
     // Crea el path completo de la ubicación de la imagen
-    const imagePath = path.join(__dirname,  `../assets/routines/${id}`)
+    const imagePath = path.join(__dirname,  `../assets/${folder}/${id}`)
 
     if( !fs.existsSync(imagePath)){
         return res.status(404).json({
@@ -37,7 +37,7 @@ const getImage = async(req,res) => {
         });
     }
 
-    // Retorna la imagen, llamando a esta en el frontend ruta veo la imagen 
+    // Retorna la imagen, llamando a esta ruta en el frontend  veo la imagen 
     res.sendFile(imagePath)
 }
 

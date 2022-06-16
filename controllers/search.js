@@ -1,4 +1,4 @@
-const { User, Movement } = require( "../models" )
+const { User, Movement, Group } = require( "../models" )
 
 
 const searchInCollection = async(req, res) => {
@@ -8,20 +8,65 @@ const searchInCollection = async(req, res) => {
     const regex = new RegExp(word, 'i')
 
     switch (collection) {
-        case 'Users':
-            model = await User.find({
+        case 'UsersAndGroups':
+            /* model = await User.find({
                 $or: [{name:regex}, {email:regex}],
                 $and: [{status:true}, {_id: {$ne: uid}}],
-                
+            }) */
+            const users = await User.find({
+                $or: [{name:regex}, {email:regex}],
+                $and: [{status:true}, {_id: {$ne: uid}}],
             })
+            const groups = await Group.find({name:regex})
+                .populate('users')
+                .populate('admin')
+                .populate('creatorUser')
+
+            model = {
+                users,
+                groups
+            }
             break;
 
         case 'Movements':
-            model = Movement.find({
+            model = await Movement.find({
                 // Buscar "para..." o "enviado a..."
-                // $or: [{name:regex}, {email:regex}],
-                // $and: [{status:true}]
+                $or:[
+                    {'from.name':regex}, 
+                    {'from.email':regex}, 
+                    {'to.name':regex}, 
+                    {'to.email':regex}, 
+                    {'routineAtSentMoment.name':regex},
+                ],
+
             })
+            .populate('routine')
+            .populate({
+                path: 'routineAtSentMoment',
+                populate: {
+                    path: 'days',
+                    populate: {
+                        path: 'workouts',
+                        populate: {
+                            path: 'combinedWorkouts',
+                            populate: {
+                                path: 'workout',
+                                populate: {
+                                    path: 'muscle'
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+            break;
+
+        case 'groups':
+            model = await Group.find({name:regex})
+                .populate('users')
+                .populate('admin')
+                .populate('creatorUser')
+
             break;
     
         default:
@@ -29,8 +74,6 @@ const searchInCollection = async(req, res) => {
                 msg: `No se puede buscar en colección ${collection}`
             });
     }
-
-    // Si no es un ID de Mongo entonces busca por nombre o correo
 
     res.status(200).json({
         results: model
