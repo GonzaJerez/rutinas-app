@@ -105,10 +105,10 @@ const putUser = async(req = request, res) => {
         rest.img = await updateImgUser(id, req.files.img)
     }
 
-    const email1Lower = email1.toLowerCase();
-    const email2Lower = email2.toLowerCase();
-
-    if (email1Lower && email2Lower) {
+    
+    if (email1 && email2) {
+        const email1Lower = email1.toLowerCase();
+        const email2Lower = email2.toLowerCase();
         if (email1Lower !== email2Lower) {
             return res.status(404).json({
                 msg: `Los emails introducidos no son iguales`
