@@ -3,7 +3,7 @@ const {Routine} = require( "../models" )
 
 // Devuelve las rutinas no eliminadas del usuario q hace la peticion
 const getRoutines = async(req, res) => {
-    const {page = 1, limit=10} = req.query;
+    const {page = 1, limit=10, addedRoutines=0} = req.query;
     const {_id: uid} = req.user;
 
     // Query para devolver solo las rutinas del usuario
@@ -22,7 +22,7 @@ const getRoutines = async(req, res) => {
             await Routine.find(queryByActualUser)
                 .sort({modifyDate: 'desc'})
                 .limit(Number(limit))
-                .skip(Number(limit)*Number(page - 1))
+                .skip(Number(limit)*Number(page - 1) + Number(addedRoutines))
                 .populate('actualUser', ['name', 'email'])
                 .populate('creatorUser', ['name', 'email'])
                 .populate({

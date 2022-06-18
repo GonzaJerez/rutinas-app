@@ -61,7 +61,7 @@ const getWorkout = async(req, res) => {
 
 
 const postWorkout = async(req, res) => {
-    let {name, muscle} = req.body;
+    let {name, muscle, validTools} = req.body;
     let img;
 
     name = name.toUpperCase();
@@ -77,7 +77,14 @@ const postWorkout = async(req, res) => {
 
     // Si se recibe validTools valida que cada una exista en array de todas las tools disponibles
     if (validTools) {
-        const isToolsIncorrect = validTools.find( tool => !tools.includes(tool))
+        let isToolsIncorrect;
+
+        if (typeof validTools === 'string') {
+            isToolsIncorrect = !tools.includes(validTools)
+        } else {
+            isToolsIncorrect = validTools.find( tool => !tools.includes(tool))
+        }
+        
         if (isToolsIncorrect){
             return res.status(404).json({
                 msg: `Ocurrió un problema con las validTools recibidas`
@@ -138,7 +145,14 @@ const putWorkout = async(req, res) => {
 
     // Si se recibe validTools valida que cada una exista en array de todas las tools disponibles
     if (validTools) {
-        const isToolsIncorrect = validTools.find( tool => !tools.includes(tool))
+        let isToolsIncorrect;
+
+        if (typeof validTools === 'string') {
+            isToolsIncorrect = !tools.includes(validTools)
+        } else {
+            isToolsIncorrect = validTools.find( tool => !tools.includes(tool))
+        }
+        
         if (isToolsIncorrect){
             return res.status(404).json({
                 msg: `Ocurrió un problema con las validTools recibidas`
