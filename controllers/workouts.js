@@ -8,7 +8,7 @@ const { tools } = require( '../types/tools' );
 
 
 const getWorkouts = async(req, res) => {
-    let {muscleId, page= 1, limit=10} = req.query;
+    let {muscleId, page= 1, limit=100} = req.query;
     let query = {status:true};
 
     if (isNaN(Number(page)) || isNaN(Number(limit))) {
@@ -31,6 +31,7 @@ const getWorkouts = async(req, res) => {
     const [total, workouts] = await Promise.all([
         await Workout.countDocuments(query),
         await Workout.find(query)
+            .sort({name:'asc'})
             .limit(Number(limit))
             .skip(Number(limit)*Number(page - 1))
             .populate('muscle')

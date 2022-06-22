@@ -67,6 +67,13 @@ const googleSignIn = async(req, res) => {
         }
         let user = await User.findOne({email})
 
+        // Si el usuario se registró con email no lo deja registrarse con google
+        if (!user.google) {
+            return res.status(400).json({
+                msg:`El usuario ya se encuentra registrado con el email`
+            })
+        }
+
         // Si el user no existe entonces lo crea
         if (!user) {
             user = new User(data)

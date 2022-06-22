@@ -20,6 +20,12 @@ const postCombinedWorkouts = async(req,res) => {
 
     const routine = await Routine.findById(idRoutine);
 
+    if (!routine) {
+        return res.status(400).json({
+            msg: `No existe rutina con el id ${idRoutine}`
+        })
+    }
+
     routine.days = routine.days.map( day => day._id.toString() !== idDay 
         ? day 
         : {

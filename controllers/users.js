@@ -52,6 +52,20 @@ const postUsers = async(req, res) => {
     const {name, email, password, role} = req.body;
     const emailLower = email.toLowerCase()
 
+    // Valida que el email no se encuentre registrado
+    const existUser = await User.findOne({email:emailLower})
+    if (existUser) {
+        if (existUser.google) {
+            return res.status(400).json({
+                msg: `El usuario ya se encuentra registrado con google`
+            })
+        } else {
+            return res.status(400).json({
+                msg: `El usuario ya se encuentra registrado`
+            })
+        }
+    }
+
     let user;
 
     // Valida q exista un solo administrador
