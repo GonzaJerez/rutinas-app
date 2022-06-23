@@ -57,9 +57,6 @@ const getRoutines = async(req, res) => {
     }
 }
 
-
-
-
 const getRoutine = async(req, res) => {
     const {idRoutine} = req.params;
 
