@@ -154,7 +154,7 @@ const socketController = async(socket) => {
     socket.on('routineSendingResponse', async(payload)=>{
         // Busca la rutina y el movimiento enviados por el cliente
         const routine = await Routine.findById(payload.idRoutine)
-        const movement = await movement.findById(payload.idMovement)
+        const movement = await Movement.findById(payload.idMovement)
 
         // Si no fue aceptada cambio los status del movimiento
         // y elimino la rutina enviada
