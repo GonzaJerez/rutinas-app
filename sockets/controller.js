@@ -137,9 +137,9 @@ const socketController = async(socket) => {
         // Cuando termina de guardar en DB le envia al cliente que hizo la petición el movimiento y nombre de la rutina enviada
         callback({movement, nameRoutine:actualRoutine.name})
 
-        // Si se envía rutina a otro usuario emite evento 'receiveRoutine' con los datos del usuario que envía la rutina y la rutina
+        // Si se envía rutina a otro usuario y no un grupo emite evento 'receiveRoutine' con los datos del usuario que envía la rutina y la rutina
         if (type === 'Users') {
-            socket.to(uidReceiver).emit('receiveRoutine', {
+            socket.to(uidReceiver[0]).emit('receiveRoutine', {
                 from: {
                     uid:    user._id,
                     name:   user.name,
