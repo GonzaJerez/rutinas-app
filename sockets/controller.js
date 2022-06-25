@@ -156,10 +156,9 @@ const socketController = async(socket) => {
         const routine = await Routine.findById(payload.idRoutine)
         const movement = await movement.findById(payload.idMovement)
 
-        // Si no fue aceptada cambio los status de la rutina y del movimiento
+        // Si no fue aceptada cambio los status del movimiento
         // y elimino la rutina enviada
         if (!payload.accepted) {
-            // routine.actualUser = routine.lastUser;
             movement.status = 'Rejected';
             await routine.remove()
             socket.to(payload.from.uid).emit('statusSendRoutine', {

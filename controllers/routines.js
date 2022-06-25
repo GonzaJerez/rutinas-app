@@ -6,8 +6,8 @@ const getRoutines = async(req, res) => {
     const {page = 1, limit=10, addedRoutines=0} = req.query;
     const {_id: uid} = req.user;
 
-    // Query para devolver solo las rutinas del usuario
-    const queryByActualUser = {actualUser: uid}
+    // Query para devolver solo las rutinas del usuario que hayan sido aceptadas
+    const queryByActualUser = {actualUser: uid, isPendingToAccept:false}
 
     // Valida que las querys recibidas sean números
     if (isNaN(Number(page)) || isNaN(Number(limit))) {
