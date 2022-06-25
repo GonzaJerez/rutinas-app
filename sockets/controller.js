@@ -111,7 +111,7 @@ const socketController = async(socket) => {
         
         // Descomprime cada subdocumento hasta las músculos
         await Promise.all([
-            movement.populate('routine'),
+            movement.populate('routines'),
             movement.populate({
                 path: 'routineAtSentMoment',
                 populate: {
