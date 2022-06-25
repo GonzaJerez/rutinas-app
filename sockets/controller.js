@@ -89,7 +89,8 @@ const socketController = async(socket) => {
             Routine.insertMany(listRoutinesToInsert),
             // Crea documento en colección Movements y guarda en DB
             new Movement({
-                routine: idRoutine,
+                // routine: idRoutine,
+                routines: listRoutinesToInsert,
                 from: {
                     name: user.name,
                     email: user.email,
@@ -159,7 +160,13 @@ const socketController = async(socket) => {
         // Si no fue aceptada cambio los status del movimiento
         // y elimino la rutina enviada
         if (!payload.accepted) {
-            movement.status = 'Rejected';
+            movement.to = movement.to.map( userTo => userTo._id !== user._id.toString()
+                ? userTo
+                : {
+                    ...userTo,
+                    status: 'Rejected'
+                }
+            )
             await routine.remove()
             socket.to(payload.from._id).emit('statusSendRoutine', {
                 status: false
@@ -167,7 +174,13 @@ const socketController = async(socket) => {
         } else {
             // Respuesta al usuario que hizo el envío
             // Actualiza campos de la rutina y movimiento y guarda en DB
-            movement.status = 'Accepted';
+            movement.to = movement.to.map( userTo => userTo._id !== user._id.toString()
+                ? userTo
+                : {
+                    ...userTo,
+                    status: 'Accepted'
+                }
+            )
             routine.isPendingToAccept = false;
             routine.modifyDate = Date.now();
             socket.to(payload.from._id).emit('statusSendRoutine', {
@@ -177,6 +190,7 @@ const socketController = async(socket) => {
             await routine.save()
         }
         
+        console.log(movement);
         await movement.save()
     })
 

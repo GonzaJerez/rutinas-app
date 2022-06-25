@@ -55,8 +55,8 @@ const MovementSchema = Schema({
             default:'Pending'
         },
     }],
-    routine: {
-        type: Schema.Types.ObjectId,
+    routines: {
+        type: [Schema.Types.ObjectId],
         ref: 'Routine',
         required: true
     },
