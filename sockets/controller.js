@@ -161,7 +161,7 @@ const socketController = async(socket) => {
         if (!payload.accepted) {
             movement.status = 'Rejected';
             await routine.remove()
-            socket.to(payload.from.uid).emit('statusSendRoutine', {
+            socket.to(payload.from._id).emit('statusSendRoutine', {
                 status: false
             })
         } else {
@@ -170,7 +170,7 @@ const socketController = async(socket) => {
             movement.status = 'Accepted';
             routine.isPendingToAccept = false;
             routine.modifyDate = Date.now();
-            socket.to(payload.from.uid).emit('statusSendRoutine', {
+            socket.to(payload.from._id).emit('statusSendRoutine', {
                 status: true
             })
 
