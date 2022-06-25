@@ -104,10 +104,10 @@ const cleaningIdsRoutine = (routine) => {
     
                             // Si existen los sets entonces les saca el id a c/u y retorna el resto del set
                             if (work.sets) {
-                                work.sets = work.sets.map( set => ({numReps:set.numReps, weight: set.weight}))
+                                work.sets = work.sets.map( set => ({numReps:set.numReps, weight: set.weight, isDescending: set.isDescending}))
                             }
                             
-                            return {tool: work.tool, workout:work.workout || '', sets: work.sets}
+                            return {tool: work.tool, workout:work.workout || '', sets: work.sets, mode: work.mode}
                         })
                     }
                     return {combinedWorkouts: workout.combinedWorkouts}
