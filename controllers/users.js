@@ -1,7 +1,7 @@
 const {response, request} = require('express')
 const bcrypt = require('bcryptjs')
 
-const {User} = require('../models');
+const {User, Routine} = require('../models');
 const { generateJWT } = require( '../helpers/generate-jwt' );
 const { roles } = require( '../types/roles' );
 const { updateImgUser } = require( '../helpers' );
@@ -105,7 +105,8 @@ const postUsers = async(req, res) => {
         modifyDate: dateNow
     }
 
-    await new Routine({...defaultInit, ...assingUser, ...dates})
+    const routine = await new Routine({...defaultInit, ...assingUser, ...dates})
+    await routine.save()
 
     res.status(201).json({
         user,
