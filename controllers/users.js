@@ -5,6 +5,7 @@ const {User} = require('../models');
 const { generateJWT } = require( '../helpers/generate-jwt' );
 const { roles } = require( '../types/roles' );
 const { updateImgUser } = require( '../helpers' );
+const { defaultInit } = require( '../assets/defaultRoutines/defaultInit' );
 
 
 const getUsers = async(req = request, res = response) => {
@@ -91,6 +92,20 @@ const postUsers = async(req, res) => {
 
     // Generar JWT
     const token = await generateJWT(user._id);
+
+    // Crear primera rutina por default
+    const assingUser = {
+        creatorUser: user._id,
+        actualUser: user._id
+    }
+
+    const dateNow = Date.now()
+    const dates = {
+        creationDate: dateNow,
+        modifyDate: dateNow
+    }
+
+    await new Routine({...defaultInit, ...assingUser, ...dates})
 
     res.status(201).json({
         user,
