@@ -1,7 +1,7 @@
 const defaultInit = {
-    name: "Hipertrofia 4 dias",
+    name: "Rutina clásica 4 dias",
     typeUnit: "kg",
-    img: "routine1.png",
+    img: "routine14.png",
     timer: 60000,
     days: [
         {

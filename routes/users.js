@@ -26,7 +26,7 @@ router.get('/:id',[
 router.post('/', [
     check('name', 'El nombre es obligatorio').notEmpty(),
     check('email', 'El correo no es válido').isEmail(),
-    check('email').custom(emailExist),
+    // check('email').custom(emailExist),
     check('password', 'La contraseña debe tener al menos 6 caracteres').isLength({min:6}),
     // check('role', 'No es un role válido').isIn([roles.admin, roles.user]),
     validateFields

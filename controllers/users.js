@@ -56,15 +56,15 @@ const postUsers = async(req, res) => {
     // Valida que el email no se encuentre registrado
     const existUser = await User.findOne({email:emailLower})
     if (existUser) {
+        let msgError;
         if (existUser.google) {
-            return res.status(400).json({
-                msg: `El usuario ya se encuentra registrado con google`
-            })
+            msgError = `El usuario ya se encuentra registrado con google`
         } else {
-            return res.status(400).json({
-                msg: `El usuario ya se encuentra registrado`
-            })
+            msgError = `El usuario ya se encuentra registrado`
         }
+        return res.status(400).json({
+            msg: msgError
+        })
     }
 
     let user;

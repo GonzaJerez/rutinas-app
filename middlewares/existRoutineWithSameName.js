@@ -11,7 +11,7 @@ const existRoutineWithSameName = async(req, res, next) => {
 
     if (exist) {
         return res.status(400).json({
-            msg: `Usuario ya tiene una rutina llamada ${name}`
+            msg: `Usted ya tiene una rutina llamada ${name}`
         })
     }
 
