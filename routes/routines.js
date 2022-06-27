@@ -1,6 +1,6 @@
 const {Router} = require('express');
 const { check } = require( 'express-validator' );
-const { getRoutines, getRoutine, postRoutine, putRoutine, deleteRoutine, copyRoutine } = require( '../controllers/routines' );
+const { getRoutines, getRoutine, postRoutine, putRoutine, deleteRoutine, copyRoutine, getDefaultRoutines } = require( '../controllers/routines' );
 const { validateFields, validateJWT, routineOwnerUser, existRoutineWithSameName, validateNumRepsSets, validateWorkout, validateTool  } = require( '../middlewares' );
 
 const router = Router();
@@ -20,7 +20,7 @@ router.post('/',[
     check('name', 'El name es obligatorio').notEmpty(),
     check('img', 'La imagen es obligatoria').notEmpty(),
     check('typeUnit', 'No es una unidad de medida permitida').isIn(['kg','lb', 'oz']),
-    existRoutineWithSameName,
+    // existRoutineWithSameName,
     validateNumRepsSets,
     validateWorkout,
     validateTool,
@@ -51,5 +51,6 @@ router.post('/copy/:idRoutine',[
     validateFields,
     routineOwnerUser,
 ], copyRoutine)
+
 
 module.exports = router;

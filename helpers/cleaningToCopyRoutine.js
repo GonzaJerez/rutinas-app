@@ -123,8 +123,8 @@ const cleaningIdsRoutine = (routine) => {
         img: routine.img,
         timer: routine.timer,
         days: routine.days,
-        creatorUser: routine.creatorUser.toString(),
-        actualUser: routine.actualUser.toString(),
+        creatorUser: (routine.creatorUser) && routine.creatorUser.toString(),
+        actualUser: (routine.actualUser) && routine.actualUser.toString(),
     };
 }
 

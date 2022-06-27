@@ -25,7 +25,12 @@ const getMovements = async(req,res) =>{
             .skip(Number(limit)*Number(page - 1))
             // .populate('to', ['name', 'email'])
             // .populate('from', ['name', 'email'])
-            .populate('routines')
+            .populate({
+                path: 'routines',
+                populate: {
+                    path: 'actualUser'
+                }
+            })
             .populate({
                 path: 'routineAtSentMoment',
                 populate: {

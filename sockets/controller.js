@@ -168,6 +168,8 @@ const socketController = async(socket) => {
                 }
             )
             await routine.remove()
+            // elimina la referencia a la rutina en el movimiento
+            movement.routines = movement.routines.filter( el => el.toString() !== payload.idRoutine )
             socket.to(payload.from._id).emit('statusSendRoutine', {
                 status: false
             })
@@ -190,7 +192,6 @@ const socketController = async(socket) => {
             await routine.save()
         }
         
-        console.log(movement);
         await movement.save()
     })
 

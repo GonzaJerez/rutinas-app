@@ -1,4 +1,5 @@
-const { cleaningToCopyRoutine } = require( "../helpers" );
+
+const { cleaningToCopyRoutine, cleaningIdsRoutine } = require( "../helpers" );
 const {Routine} = require( "../models" )
 
 // Devuelve las rutinas no eliminadas del usuario q hace la peticion
@@ -64,14 +65,17 @@ const getRoutine = async(req, res) => {
         .populate('actualUser', ['name', 'email'])
         .populate('creatorUser', ['name', 'email'])
         .populate({
-            // Muestra ref de los días
-            path: 'routine',
+            path: 'days',
             populate: {
-                // Muestra ref de los ejercicios
                 path: 'workouts',
                 populate: {
-                    // Muestra ref del ejercicio elegido
-                    path: 'workout'
+                    path: 'combinedWorkouts',
+                    populate: {
+                        path: 'workout',
+                        populate: {
+                            path: 'muscle'
+                        }
+                    }
                 }
             }
         })
@@ -97,13 +101,18 @@ const postRoutine = async(req, res) => {
         actualUser: uid
     }
 
+    const routineWithoutIds = cleaningIdsRoutine(body)
+
     const dateNow = Date.now()
 
     const creationDate = dateNow;
     const modifyDate = dateNow;
 
-    const routine = await new Routine({...body, ...assingUser, creationDate, modifyDate})
-    routine.days = [{}]
+    const routine = await new Routine({...routineWithoutIds, ...assingUser, creationDate, modifyDate})
+
+    // Si es rutina predeterminada deja los días exactamente igual, si es una rutina personalizada nueva
+    // crea el primer día dentro de la rutina
+    routine.days = (!routine.days.length === 0) ? routine.days : [{}]
 
     await Promise.all([
         routine.populate('actualUser', ['name', 'email']),
@@ -213,8 +222,9 @@ const copyRoutine = async(req,res) => {
     await routine.save()
 
     res.json({routine})
-
 }
+
+
 
 module.exports = {
     getRoutines,
@@ -222,5 +232,5 @@ module.exports = {
     postRoutine,
     putRoutine,
     deleteRoutine,
-    copyRoutine
+    copyRoutine,
 }

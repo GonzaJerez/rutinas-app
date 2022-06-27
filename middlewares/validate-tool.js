@@ -14,6 +14,7 @@ const validateTool = (req,res,next) => {
 
                 workout.combinedWorkouts.map( work => {
                     if (!tools.includes(work.tool)) {
+                        console.log(work);
                         return toolIsValid = false;
                     }
                 })
