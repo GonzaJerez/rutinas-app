@@ -93,7 +93,7 @@ const getRoutine = async(req, res) => {
 
 
 const postRoutine = async(req, res) => {
-    const body = req.body;
+    const {_id, ...body} = req.body;
     const {_id: uid} = req.user;
 
     const assingUser = {
@@ -101,18 +101,18 @@ const postRoutine = async(req, res) => {
         actualUser: uid
     }
 
-    const routineWithoutIds = cleaningIdsRoutine(body)
-
     const dateNow = Date.now()
 
     const creationDate = dateNow;
     const modifyDate = dateNow;
 
-    const routine = await new Routine({...routineWithoutIds, ...assingUser, creationDate, modifyDate})
+    const routine = await new Routine({...body, ...assingUser, creationDate, modifyDate})
 
     // Si es rutina predeterminada deja los días exactamente igual, si es una rutina personalizada nueva
     // crea el primer día dentro de la rutina
-    routine.days = (!routine.days.length === 0) ? routine.days : [{}]
+    if (routine.days.length === 0) {
+        routine.days = [{}]
+    }
 
     await Promise.all([
         routine.populate('actualUser', ['name', 'email']),
